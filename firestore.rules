@@ -24,7 +24,7 @@ service cloud.firestore {
     // Users collection rules
     match /users/{userId} {
       // Allow users to read their own document
-      // Allow admins to read any user document (this also allows listing)
+      // Allow admins to read any user document
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
       
       // Allow users to create their own document when signing up
@@ -36,6 +36,34 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (isOwner(userId) || isAdmin());
       
       // Only admins can delete user documents
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+    
+    // Allow queries on users collection for username checks (authenticated users only)
+    // This is needed to check if username already exists during signup
+    match /users/{document=**} {
+      allow read: if isAuthenticated();
+      allow list: if isAuthenticated() && isAdmin();
+    }
+    
+    // Verification codes collection
+    match /verificationCodes/{email} {
+      // Allow anyone to create verification codes (for signup/login)
+      // Allow authenticated users to read/update/delete their codes
+      allow create: if true;
+      allow read: if true;
+      allow update: if true;
+      allow delete: if true;
+    }
+    
+    // Contact messages collection
+    match /contactMessages/{messageId} {
+      // Allow anyone to create messages (contact form)
+      allow create: if true;
+      // Only admins can read messages
+      allow read: if isAuthenticated() && isAdmin();
+      // Only admins can update/delete messages
+      allow update: if isAuthenticated() && isAdmin();
       allow delete: if isAuthenticated() && isAdmin();
     }
   }

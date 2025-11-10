@@ -72,18 +72,46 @@ function initializeNavigation() {
     
     // Handle contact form submission
     if (contactFormEl) {
-        contactFormEl.addEventListener('submit', (e) => {
+        contactFormEl.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('contactName');
-            const email = document.getElementById('contactEmail');
-            const message = document.getElementById('contactMessage');
+            const nameEl = document.getElementById('contactName');
+            const emailEl = document.getElementById('contactEmail');
+            const messageEl = document.getElementById('contactMessage');
+            
+            const name = nameEl ? nameEl.value.trim() : '';
+            const email = emailEl ? emailEl.value.trim() : '';
+            const message = messageEl ? messageEl.value.trim() : '';
             
             // Simple form validation
-            if (name && email && message && name.value && email.value && message.value) {
+            if (!name || !email || !message) {
+                alert('Please fill in all fields.');
+                return;
+            }
+            
+            // Store message in Firestore
+            try {
+                if (window.db) {
+                    const { collection, addDoc, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                    const messagesRef = collection(window.db, 'contactMessages');
+                    
+                    await addDoc(messagesRef, {
+                        name: name,
+                        email: email,
+                        message: message,
+                        createdAt: new Date().toISOString(),
+                        read: false
+                    });
+                    
+                    alert('Thank you for your message! We will get back to you soon.');
+                    contactFormEl.reset();
+                } else {
+                    alert('Thank you for your message! We will get back to you soon.');
+                    contactFormEl.reset();
+                }
+            } catch (error) {
+                console.error('Error storing contact message:', error);
                 alert('Thank you for your message! We will get back to you soon.');
                 contactFormEl.reset();
-            } else {
-                alert('Please fill in all fields.');
             }
         });
     }
@@ -135,17 +163,57 @@ function initializeAuth() {
                     return;
                 }
                 
-                // Store user data in Firestore
-                await storeUserData(uid, email);
+                // Get user data from Firestore
+                const userData = await getUserData(uid);
+                const username = userData?.username || 'Not set';
+                const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
+                
+                // Store/update user data in Firestore
+                await storeUserData(uid, email, username, isAdmin);
                 
                 // Display user information
                 if (userEmailEl) userEmailEl.textContent = email;
                 if (displayEmailEl) displayEmailEl.textContent = email;
-                if (userIdEl) userIdEl.textContent = uid;
+                if (userIdEl) userIdEl.textContent = username || uid.substring(0, 6);
+                
+                // Display username
+                const displayUsernameEl = document.getElementById('displayUsername');
+                if (displayUsernameEl) {
+                    displayUsernameEl.textContent = username || 'Not set';
+                }
                 
                 // Set user initial (first letter of email)
                 if (email && userInitialEl) {
                     userInitialEl.textContent = email.charAt(0).toUpperCase();
+                }
+                
+                // Show developer badge and access level
+                const developerBadge = document.getElementById('developerBadge');
+                const userAccessLevel = document.getElementById('userAccessLevel');
+                const userStatus = document.getElementById('userStatus');
+                
+                if (isAdmin) {
+                    // Show developer badge
+                    if (developerBadge) developerBadge.style.display = 'inline-flex';
+                    if (userAccessLevel) {
+                        userAccessLevel.textContent = 'VIP - Developer Access';
+                        userAccessLevel.className = 'access-level vip';
+                    }
+                    if (userStatus) {
+                        userStatus.textContent = '👑 Developer Account Active';
+                        userStatus.style.color = '#f5576c';
+                    }
+                } else {
+                    // Hide developer badge, show normal access
+                    if (developerBadge) developerBadge.style.display = 'none';
+                    if (userAccessLevel) {
+                        userAccessLevel.textContent = 'Normal Access';
+                        userAccessLevel.className = 'access-level normal';
+                    }
+                    if (userStatus) {
+                        userStatus.textContent = '✓ Account Active';
+                        userStatus.style.color = '#28a745';
+                    }
                 }
                 
                 // Check if user is admin and show developer button
@@ -212,8 +280,26 @@ function checkAdminAccess(email) {
     }
 }
 
+// Get user data from Firestore
+async function getUserData(uid) {
+    try {
+        if (!window.db) return null;
+        
+        const userRef = doc(window.db, 'users', uid);
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists()) {
+            return userDoc.data();
+        }
+        return null;
+    } catch (error) {
+        console.error('Error getting user data:', error);
+        return null;
+    }
+}
+
 // Store user data in Firestore
-async function storeUserData(uid, email) {
+async function storeUserData(uid, email, username, isAdmin) {
     try {
         if (!window.db) return;
         
@@ -225,15 +311,20 @@ async function storeUserData(uid, email) {
             await setDoc(userRef, {
                 email: email,
                 uid: uid,
+                username: username || null,
                 createdAt: new Date().toISOString(),
                 isBanned: false,
-                isAdmin: ADMIN_EMAILS.includes(email.toLowerCase()),
+                isAdmin: isAdmin,
                 lastLogin: new Date().toISOString()
             });
         } else {
-            // Update last login
+            // Update last login and preserve existing data
+            const existingData = userDoc.data();
             await updateDoc(userRef, {
-                lastLogin: new Date().toISOString()
+                lastLogin: new Date().toISOString(),
+                isAdmin: isAdmin,
+                // Preserve username if it exists, otherwise don't overwrite
+                ...(username && !existingData.username ? { username: username } : {})
             });
         }
     } catch (error) {

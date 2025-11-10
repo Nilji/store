@@ -213,6 +213,7 @@ function renderUsersTable(users) {
         
         const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
         const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'N/A';
+        const username = user.username || 'Not set';
         
         const banButton = user.isBanned 
             ? `<button class="btn-action btn-unban" onclick="unbanUser('${user.id}')">Unban</button>`
@@ -221,7 +222,7 @@ function renderUsersTable(users) {
         return `
             <tr>
                 <td>${user.email || 'N/A'}</td>
-                <td><small>${user.id}</small></td>
+                <td><strong>${username}</strong></td>
                 <td>${statusBadges.join(' ')}</td>
                 <td>${createdAt}</td>
                 <td>${lastLogin}</td>
@@ -302,6 +303,7 @@ window.viewUserDetails = async function(uid) {
             const details = `
 User Details:
 Email: ${userData.email || 'N/A'}
+Username: ${userData.username || 'Not set'}
 User ID: ${uid}
 Status: ${userData.isBanned ? 'Banned' : 'Active'}
 Admin: ${userData.isAdmin ? 'Yes' : 'No'}

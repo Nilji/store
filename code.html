@@ -3,48 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexza Store - Login</title>
+    <title>Verification Code - Nexza Store</title>
     <link rel="icon" type="image/png" href="logo.png">
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="code.css">
 </head>
 <body>
-    <audio id="loginSound" preload="auto">
-        <source src="1.mp3" type="audio/mpeg">
-    </audio>
-    
     <div class="container">
-        <div class="login-card">
+        <div class="verification-card">
             <div class="logo-container">
                 <img src="logo.png" alt="Nexza Store Logo" class="logo-img">
             </div>
-            <h1>Welcome Back</h1>
-            <p class="subtitle">Sign in to your account</p>
+            <h1>Email Verification</h1>
+            <p class="subtitle">Enter the 6-digit code sent to your email</p>
+            <p class="email-display" id="emailDisplay">Loading...</p>
             
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="Enter your email" required>
+            <form id="verificationForm">
+                <div class="code-inputs">
+                    <input type="text" class="code-input" id="code1" maxlength="1" pattern="[0-9]">
+                    <input type="text" class="code-input" id="code2" maxlength="1" pattern="[0-9]">
+                    <input type="text" class="code-input" id="code3" maxlength="1" pattern="[0-9]">
+                    <input type="text" class="code-input" id="code4" maxlength="1" pattern="[0-9]">
+                    <input type="text" class="code-input" id="code5" maxlength="1" pattern="[0-9]">
+                    <input type="text" class="code-input" id="code6" maxlength="1" pattern="[0-9]">
                 </div>
                 
-                <div class="form-group" id="usernameGroup" style="display: none;">
-                    <label for="username">Username (6 digits only)</label>
-                    <input type="text" id="username" placeholder="Enter 6-digit username" maxlength="6" pattern="[0-9]{6}">
-                    <small class="form-hint">Username must be exactly 6 numbers (0-9)</small>
+                <div class="timer-container">
+                    <p class="timer-text" id="timerText">Code expires in: <span id="timer">60</span>s</p>
                 </div>
                 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter your password" required>
-                </div>
+                <button type="submit" class="btn-verify" id="verifyBtn">Verify Code</button>
                 
-                <button type="submit" class="btn-primary" id="submitBtn">Sign In</button>
+                <div class="resend-container">
+                    <p class="resend-text" id="resendText">Resend code in: <span id="resendTimer">300</span>s</p>
+                    <button type="button" class="btn-resend" id="resendBtn" style="display: none;">Resend Code</button>
+                </div>
             </form>
-            
-            <div class="divider">
-                <span>or</span>
-            </div>
-            
-            <button type="button" class="btn-secondary" id="signUpBtn">Create New Account</button>
             
             <div id="errorMessage" class="error-message"></div>
             <div id="successMessage" class="success-message"></div>
@@ -67,26 +60,19 @@
                 appId: "1:848695753485:web:ba02165ff4d45ff938ce44"
             };
 
-            // Initialize Firebase
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
             const db = getFirestore(app);
             
-            // Make auth and db available globally
             window.auth = auth;
             window.db = db;
             window.firebaseInitialized = true;
         } catch (error) {
             console.error('Firebase initialization error:', error);
-            const errorDiv = document.getElementById('errorMessage');
-            if (errorDiv) {
-                errorDiv.textContent = 'Firebase initialization failed. Please check your configuration. Error: ' + error.message;
-                errorDiv.classList.add('show');
-            }
             window.firebaseInitialized = false;
         }
     </script>
-    <script type="module" src="index.js"></script>
+    <script type="module" src="code.js"></script>
 </body>
 </html>
 
