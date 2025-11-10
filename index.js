@@ -149,11 +149,26 @@ async function sendVerificationCode(email) {
         const stored = await storeVerificationCode(email, code);
         
         if (stored) {
-            console.log('=== VERIFICATION CODE (FOR TESTING) ===');
-            console.log('Email:', email);
-            console.log('Code:', code);
-            console.log('Code expires in 1 minute');
-            console.log('=======================================');
+            // If EMAIL_API_URL is configured, send via webhook (e.g., Cloud Function, SendGrid proxy)
+            try {
+                if (window.EMAIL_API_URL) {
+                    await fetch(window.EMAIL_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, code })
+                    });
+                } else {
+                    // Fallback to console if no email service configured
+                    console.log('=== VERIFICATION CODE (FOR TESTING) ===');
+                    console.log('Email:', email);
+                    console.log('Code:', code);
+                    console.log('Code expires in 1 minute');
+                    console.log('=======================================');
+                }
+            } catch (e) {
+                console.warn('Email sending failed, code logged to console for testing.', e);
+                console.log('Email:', email, 'Code:', code);
+            }
             return { success: true, code: code };
         }
         
@@ -224,6 +239,13 @@ loginForm.addEventListener('submit', async (e) => {
             // Sign in without verification code
             try {
                 await signInWithEmailAndPassword(window.auth, email, password);
+                // Set/refresh session start time for mobile session expiry
+                try {
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+                    if (isMobile) {
+                        localStorage.setItem('sessionStart', Date.now().toString());
+                    }
+                } catch (e) {}
                 showSuccess('Sign in successful! Redirecting...');
                 setTimeout(() => {
                     window.location.href = 'main.html';

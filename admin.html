@@ -8,13 +8,36 @@
 </head>
 <body>
     <div class="admin-container">
+        <!-- Mobile topbar + Drawer button -->
+        <div class="mobile-topbar">
+            <button class="btn-icon" id="mobileMenuBtn" aria-label="Menu">&#8942;</button>
+            <div class="mobile-title">Admin Dashboard</div>
+            <div class="mobile-actions">
+                <button class="btn-logout" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">NS</div>
+                <div class="sidebar-title">Nexza Admin</div>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="sidebar-link active" data-tab="users"><span class="icon">&#9728;</span><span class="label">Users</span></button>
+                <a class="sidebar-link" id="openMessagesLink" href="message.html"><span class="icon">&#9993;</span><span class="label">Messages</span></a>
+                <button class="sidebar-link" data-tab="transactions"><span class="icon">&#128179;</span><span class="label">Transactions</span></button>
+                <a class="sidebar-link" id="openAnnouncementsLink" href="announcement.html"><span class="icon">&#128227;</span><span class="label">Announcements</span></a>
+            </nav>
+        </aside>
+
         <!-- Header -->
         <header class="admin-header">
             <div class="header-content">
-                <h1>🔧 Admin Dashboard</h1>
+                <h1>Dashboard</h1>
                 <div class="header-actions">
-                    <button class="btn-back" onclick="window.location.href='main.html'">← Back to Store</button>
-                    <button class="btn-logout" id="logoutBtn">Logout</button>
+                    <button class="btn-back" onclick="window.location.href='main.html'">Back to Store</button>
+                    <button class="btn-logout desktop-only" id="logoutBtnDesktop">Logout</button>
                 </div>
             </div>
         </header>
@@ -35,6 +58,7 @@
         <!-- Admin Content -->
         <div id="adminContent" class="admin-content" style="display: none;">
             <!-- Statistics -->
+            <div class="section-title">Key indicators</div>
             <div class="stats-container">
                 <div class="stat-card">
                     <div class="stat-icon">👥</div>
@@ -44,21 +68,21 @@
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🚫</div>
+                    <div class="stat-icon">⛔</div>
                     <div class="stat-info">
                         <h3 id="bannedUsers">0</h3>
                         <p>Banned Users</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">✅</div>
+                    <div class="stat-icon">✔</div>
                     <div class="stat-info">
                         <h3 id="activeUsers">0</h3>
                         <p>Active Users</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">👑</div>
+                    <div class="stat-icon">★</div>
                     <div class="stat-info">
                         <h3 id="adminUsers">0</h3>
                         <p>Admins</p>
@@ -78,10 +102,11 @@
                 <button class="btn-refresh" id="refreshBtn">🔄 Refresh</button>
             </div>
 
-            <!-- Tabs for Users and Messages -->
-            <div class="admin-tabs">
+            <!-- Tabs (desktop only) -->
+            <div class="admin-tabs desktop-only">
                 <button class="admin-tab active" data-tab="users">Users</button>
-                <button class="admin-tab" data-tab="messages">Contact Messages</button>
+                <button class="admin-tab" data-tab="messages">Messages</button>
+                <button class="admin-tab" data-tab="transactions">Transactions</button>
             </div>
 
             <!-- Users Tab -->
@@ -92,8 +117,10 @@
                         <thead>
                             <tr>
                                 <th>Email</th>
-                                <th>Username</th>
-                                <th>Status</th>
+                                <th>User ID</th>
+                                <th>Online Status</th>
+                                <th>Last Online</th>
+                                <th>Last Offline</th>
                                 <th>Created</th>
                                 <th>Last Login</th>
                                 <th>Actions</th>
@@ -113,6 +140,15 @@
                 <div class="messages-container">
                     <div id="messagesList" class="messages-list">
                         <p class="loading-row">Loading messages...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Tab -->
+            <div id="transactionsTab" class="admin-tab-content">
+                <div class="messages-container">
+                    <div id="transactionsList" class="messages-list">
+                        <p class="loading-row">No transactions yet</p>
                     </div>
                 </div>
             </div>

@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    background: #f6f7fb;
     min-height: 100vh;
     padding: 20px;
 }
@@ -16,13 +16,68 @@ body {
     margin: 0 auto;
 }
 
+/* Sidebar (left) and mobile topbar */
+.mobile-topbar {
+    display: none;
+    background: white;
+    padding: 10px 15px;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+}
+.btn-icon {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+.mobile-title { font-weight: 700; }
+.desktop-only { display: inline-flex; }
+
+.admin-sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 240px;
+    background: #ffffff;
+    color: #0f172a;
+    padding: 20px 10px;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+    z-index: 1001;
+    border-right: 1px solid #eaecef;
+}
+.admin-sidebar .sidebar-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+}
+.sidebar-logo {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: #7c3aed; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700;
+}
+.sidebar-title { font-weight: 700; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 6px; }
+.sidebar-link {
+    display: flex; align-items: center; gap: 10px;
+    background: transparent; color: #111827;
+    border: none; padding: 10px 12px; border-radius: 8px; cursor: pointer; text-align: left;
+    text-decoration: none;
+    position: relative;
+}
+.sidebar-link .icon { width: 14px; display: inline-block; }
+.sidebar-link.active, .sidebar-link:hover { background: #f4f5f7; color: #111827; }
+.sidebar-link.active::before{
+    content:"";
+    position:absolute; left:-10px; top:8px; bottom:8px; width:3px;
+    background:#7c3aed; border-radius:6px;
+}
+
 /* Header */
 .admin-header {
-    background: white;
-    border-radius: 15px;
-    padding: 20px 30px;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 16px 24px;
     margin-bottom: 30px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(17, 24, 39, 0.06);
+    margin-left: 260px;
 }
 
 .header-content {
@@ -54,32 +109,32 @@ body {
 }
 
 .btn-back {
-    background: #667eea;
+    background: #7c3aed;
     color: white;
 }
 
 .btn-back:hover {
-    background: #5568d3;
+    background: #6d28d9;
     transform: translateY(-2px);
 }
 
 .btn-logout {
-    background: #ff4757;
+    background: #ef4444;
     color: white;
 }
 
 .btn-logout:hover {
-    background: #ff3838;
+    background: #dc2626;
     transform: translateY(-2px);
 }
 
 .btn-refresh {
-    background: #2ed573;
+    background: #10b981;
     color: white;
 }
 
 .btn-refresh:hover {
-    background: #26d467;
+    background: #059669;
     transform: translateY(-2px);
 }
 
@@ -89,7 +144,7 @@ body {
     padding: 50px;
     background: white;
     border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(17,24,39,0.06);
 }
 
 .loading-spinner {
@@ -149,17 +204,18 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    margin-left: 260px;
 }
 
 .stat-card {
     background: white;
-    border-radius: 15px;
-    padding: 25px;
+    border-radius: 14px;
+    padding: 20px;
     display: flex;
     align-items: center;
     gap: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(17, 24, 39, 0.06);
     transition: transform 0.3s ease;
 }
 
@@ -168,18 +224,19 @@ body {
 }
 
 .stat-icon {
-    font-size: 48px;
-    width: 80px;
-    height: 80px;
+    font-size: 22px;
+    width: 54px;
+    height: 54px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
+    background: #eef2ff;
+    color: #4338ca;
+    border-radius: 12px;
 }
 
 .stat-info h3 {
-    font-size: 32px;
+    font-size: 26px;
     color: #333;
     margin-bottom: 5px;
 }
@@ -189,23 +246,33 @@ body {
     font-size: 14px;
 }
 
+/* Section titles */
+.section-title{
+    margin-left: 260px;
+    margin-bottom: 10px;
+    color:#111827;
+    font-size: 16px;
+    font-weight:700;
+}
+
 /* Search Container */
 .search-container {
     background: white;
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 30px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(17,24,39,0.06);
     display: flex;
     gap: 15px;
     flex-wrap: wrap;
+    margin-left: 260px;
 }
 
 .search-input {
     flex: 1;
     min-width: 200px;
     padding: 12px 15px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid #e5e7eb;
     border-radius: 8px;
     font-size: 14px;
     outline: none;
@@ -213,7 +280,7 @@ body {
 }
 
 .search-input:focus {
-    border-color: #667eea;
+    border-color: #7c3aed;
 }
 
 .filter-select {
@@ -274,18 +341,20 @@ body {
 /* Users Table */
 .users-table-container {
     background: white;
-    border-radius: 15px;
+    border-radius: 14px;
     padding: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(17,24,39,0.06);
     overflow-x: auto;
+    margin-left: 260px;
 }
 
 /* Messages Container */
 .messages-container {
     background: white;
-    border-radius: 15px;
+    border-radius: 14px;
     padding: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(17,24,39,0.06);
+    margin-left: 260px;
 }
 
 .messages-list {
@@ -496,6 +565,12 @@ body {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+    .mobile-topbar { display: flex; }
+    .desktop-only { display: none; }
+    .admin-sidebar { transform: translateX(-260px); }
+    .admin-sidebar.open { transform: translateX(0); }
+    .admin-header { margin-left: 0; }
+    .messages-container, .users-table-container { margin-left: 0; }
     body {
         padding: 10px;
     }

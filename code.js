@@ -143,16 +143,26 @@ async function sendVerificationCode(email) {
         const stored = await storeVerificationCode(email, code);
         
         if (stored) {
-            // In production, integrate with email service (SendGrid, Mailgun, etc.)
-            // For now, log to console for testing
-            console.log('=== VERIFICATION CODE (FOR TESTING) ===');
-            console.log('Email:', email);
-            console.log('Code:', code);
-            console.log('Code expires in 1 minute');
-            console.log('=======================================');
-            
-            // In production, send actual email here
-            // Example: await sendEmail(email, 'Verification Code', `Your code is: ${code}`);
+            // If EMAIL_API_URL is configured, send via webhook (e.g., Cloud Function, SendGrid proxy)
+            try {
+                if (window.EMAIL_API_URL) {
+                    await fetch(window.EMAIL_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, code })
+                    });
+                } else {
+                    // Fallback to console for testing
+                    console.log('=== VERIFICATION CODE (FOR TESTING) ===');
+                    console.log('Email:', email);
+                    console.log('Code:', code);
+                    console.log('Code expires in 1 minute');
+                    console.log('=======================================');
+                }
+            } catch (e) {
+                console.warn('Email sending failed, code logged to console for testing.', e);
+                console.log('Email:', email, 'Code:', code);
+            }
             
             return { success: true, code: code };
         }
@@ -316,6 +326,14 @@ if (verificationForm) {
                         }
                     }
                     
+                    // Start/refresh session for mobile (30-minute expiry logic handled in main.js)
+                    try {
+                        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+                        if (isMobile) {
+                            localStorage.setItem('sessionStart', Date.now().toString());
+                        }
+                    } catch (e) {}
+
                     // Clean up
                     sessionStorage.setItem('emailVerified', 'true');
                     sessionStorage.removeItem('pendingEmail');

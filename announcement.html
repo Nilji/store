@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - Nexza Admin</title>
+    <link rel="stylesheet" href="announcement.css">
+    <link rel="stylesheet" href="ui.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="mobile-topbar">
+            <button class="btn-icon" id="mobileMenuBtn" aria-label="Menu">&#8942;</button>
+            <div class="mobile-title">Announcements</div>
+            <div class="mobile-actions">
+                <button class="btn-logout" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">NS</div>
+                <div class="sidebar-title">Nexza Admin</div>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="sidebar-link" href="admin.html"><span class="icon">&#9728;</span><span class="label">Users</span></a>
+                <a class="sidebar-link" href="message.html"><span class="icon">&#9993;</span><span class="label">Messages</span></a>
+                <a class="sidebar-link" href="admin.html#transactions"><span class="icon">&#128179;</span><span class="label">Transactions</span></a>
+                <a class="sidebar-link active" href="announcement.html"><span class="icon">&#128227;</span><span class="label">Announcements</span></a>
+            </nav>
+        </aside>
+
+        <header class="admin-header">
+            <div class="header-content">
+                <h1>Announcements</h1>
+                <div class="header-actions">
+                    <a class="btn-back" href="admin.html">Back to Dashboard</a>
+                    <button class="btn-logout desktop-only" id="logoutBtnDesktop">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="section-title">What do you want to add?</div>
+            <div class="announce-switch">
+                <button id="switchToAnnouncement" class="switch-btn active">Announcement</button>
+                <a id="switchToMessage" class="switch-btn" href="message.html">Message</a>
+                <button id="btnAdd" class="btn-add" title="Create new">＋</button>
+            </div>
+
+            <!-- Composer -->
+            <section id="composer" class="composer hidden">
+                <div class="composer-fields">
+                    <input type="text" id="annTitle" class="input" placeholder="Title">
+                    <textarea id="annContent" class="textarea" placeholder="Write your announcement..."></textarea>
+                    <div class="bg-chooser">
+                        <label><input type="radio" name="bgType" value="none" checked> No background</label>
+                        <label><input type="radio" name="bgType" value="color"> Color</label>
+                        <label><input type="radio" name="bgType" value="image"> Image</label>
+                        <input type="color" id="bgColor" value="#eef2ff" class="input hide">
+                        <input type="url" id="bgImageUrl" placeholder="Image URL" class="input hide">
+                        <label class="blur-toggle"><input type="checkbox" id="bgBlur"> Blur image</label>
+                    </div>
+                    <div class="composer-actions">
+                        <button id="btnPreview" class="btn-refresh">Preview</button>
+                        <button id="btnSave" class="btn-back">Save</button>
+                    </div>
+                </div>
+                <div class="preview-card" id="previewCard">
+                    <div class="preview-title" id="previewTitle">Preview title</div>
+                    <div class="preview-content" id="previewContent">Your announcement preview will appear here.</div>
+                </div>
+            </section>
+
+            <!-- List -->
+            <section class="messages-container">
+                <div class="search-container">
+                    <input type="text" id="annSearchInput" placeholder="Search by title" class="search-input">
+                    <button class="btn-refresh" id="annRefreshBtn">Refresh</button>
+                </div>
+                <div id="annList" class="ann-list">
+                    <p class="loading-row">Loading announcements...</p>
+                </div>
+            </section>
+
+            <div id="errorMessage" class="error-message" style="display:none;"></div>
+            <div id="successMessage" class="success-message" style="display:none;"></div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBBVXFWSkmaTycSYtPNi1beDkJRfJKKA8A",
+            authDomain: "app-a8eca.firebaseapp.com",
+            projectId: "app-a8eca",
+            storageBucket: "app-a8eca.firebasestorage.app",
+            messagingSenderId: "848695753485",
+            appId: "1:848695753485:web:ba02165ff4d45ff938ce44"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        window.auth = auth;
+        window.db = db;
+        window.firebaseInitialized = true;
+    </script>
+    <script src="ui.js"></script>
+    <script type="module" src="announcement.js"></script>
+</body>
+</html>
+

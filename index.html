@@ -47,6 +47,20 @@
         import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         
+        // Show session expired message if redirected with flag
+        (function() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('expired') === '1') {
+                    const errorDiv = document.getElementById('errorMessage');
+                    if (errorDiv) {
+                        errorDiv.textContent = 'Session Expired Please Relogin to continue';
+                        errorDiv.classList.add('show');
+                    }
+                }
+            } catch (e) {}
+        })();
+        
         try {
             const firebaseConfig = {
                 apiKey: "AIzaSyBBVXFWSkmaTycSYtPNi1beDkJRfJKKA8A",

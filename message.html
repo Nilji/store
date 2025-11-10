@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - Nexza Admin</title>
+    <link rel="stylesheet" href="message.css">
+    <link rel="stylesheet" href="ui.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="mobile-topbar">
+            <button class="btn-icon" id="mobileMenuBtn" aria-label="Menu">&#8942;</button>
+            <div class="mobile-title">Messages</div>
+            <div class="mobile-actions">
+                <button class="btn-logout" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">NS</div>
+                <div class="sidebar-title">Nexza Admin</div>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="sidebar-link" href="admin.html"><span class="icon">&#9728;</span><span class="label">Users</span></a>
+                <a class="sidebar-link active" href="message.html"><span class="icon">&#9993;</span><span class="label">Messages</span></a>
+                <a class="sidebar-link" href="admin.html#transactions"><span class="icon">&#128179;</span><span class="label">Transactions</span></a>
+            </nav>
+        </aside>
+
+        <header class="admin-header">
+            <div class="header-content">
+                <h1>Messages</h1>
+                <div class="header-actions">
+                    <a class="btn-back" href="admin.html">Back to Dashboard</a>
+                    <button class="btn-logout desktop-only" id="logoutBtnDesktop">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="compose-switch">
+            <a class="switch-btn" href="announcement.html">Announcement</a>
+            <button id="switchToMessage" class="switch-btn active">Message</button>
+            <button id="btnAddMessage" class="btn-add" title="Create new">＋</button>
+        </div>
+
+        <!-- Message Composer -->
+        <section id="messageComposer" class="composer">
+            <div class="row">
+                <input id="msgTitle" class="input" placeholder="Message title">
+                <input id="userSearch" class="input" placeholder="Search users by email / id">
+                <div class="chip-bar">
+                    <button id="selectAllBtn" class="btn btn-secondary">Select all</button>
+                    <button id="unselectAllBtn" class="btn btn-secondary">Unselect all</button>
+                </div>
+            </div>
+            <div id="userList" class="user-list"></div>
+            <div class="row" style="margin-top:8px;">
+                <textarea id="msgBody" class="textarea" placeholder="Write your message..."></textarea>
+            </div>
+            <div class="row" style="margin-top:8px;">
+                <button id="sendMsgBtn" class="btn btn-primary">Send message</button>
+            </div>
+        </section>
+
+        <div class="messages-container">
+            <div class="search-container">
+                <input type="text" id="messageSearchInput" placeholder="Search by email / user id" class="search-input">
+                <select id="messageStatusFilter" class="filter-select">
+                    <option value="all">All</option>
+                    <option value="waiting">Waiting</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="success">Success</option>
+                </select>
+                <button class="btn-refresh" id="messagesRefreshBtn">Refresh</button>
+            </div>
+
+            <div id="messagesList" class="messages-list">
+                <p class="loading-row">Loading messages...</p>
+            </div>
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display:none;"></div>
+        <div id="successMessage" class="success-message" style="display:none;"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBBVXFWSkmaTycSYtPNi1beDkJRfJKKA8A",
+            authDomain: "app-a8eca.firebaseapp.com",
+            projectId: "app-a8eca",
+            storageBucket: "app-a8eca.firebasestorage.app",
+            messagingSenderId: "848695753485",
+            appId: "1:848695753485:web:ba02165ff4d45ff938ce44"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        window.auth = auth;
+        window.db = db;
+        window.firebaseInitialized = true;
+    </script>
+    <script src="ui.js"></script>
+    <script type="module" src="message.js"></script>
+</body>
+<style>
+/* minimal fallback if message.css fails to load */
+body { background: #0b2b57; }
+</style>
+</html>
+

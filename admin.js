@@ -95,6 +95,9 @@ function setupEventListeners() {
     const filterSelect = document.getElementById('filterSelect');
     const refreshBtn = document.getElementById('refreshBtn');
     const adminTabs = document.querySelectorAll('.admin-tab');
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const adminSidebar = document.getElementById('adminSidebar');
     
     // Tab switching
     adminTabs.forEach(tab => {
@@ -119,6 +122,33 @@ function setupEventListeners() {
         });
     });
     
+    // Sidebar link switching (mobile/desktop)
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const tabName = link.getAttribute('data-tab');
+            // Remove active state
+            sidebarLinks.forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+            // Set active
+            link.classList.add('active');
+            const tabContent = document.getElementById(tabName + 'Tab');
+            if (tabContent) tabContent.classList.add('active');
+            // Load tab data
+            if (tabName === 'users') loadUsers();
+            if (tabName === 'messages') loadMessages();
+            if (tabName === 'transactions') loadTransactions && loadTransactions();
+            // Close drawer on mobile
+            if (adminSidebar) adminSidebar.classList.remove('open');
+        });
+    });
+
+    // Mobile drawer toggle
+    if (mobileMenuBtn && adminSidebar) {
+        mobileMenuBtn.addEventListener('click', () => {
+            adminSidebar.classList.toggle('open');
+        });
+    }
+
     if (searchInput) {
         searchInput.addEventListener('input', () => {
             loadUsers();
@@ -142,6 +172,7 @@ function setupEventListeners() {
 // Load users from Firestore
 async function loadUsers() {
     try {
+        const searchInput = document.getElementById('searchInput');
         const tableBody = document.getElementById('usersTableBody');
         if (!tableBody) return;
         
@@ -155,8 +186,7 @@ async function loadUsers() {
             users.push({ id: doc.id, ...doc.data() });
         });
         
-        // Filter users
-        const searchInput = document.getElementById('searchInput');
+        // Filter users: accept email or username (if present) or userId
         const filterSelect = document.getElementById('filterSelect');
         
         let filteredUsers = users;
@@ -165,7 +195,9 @@ async function loadUsers() {
         if (searchInput && searchInput.value) {
             const searchTerm = searchInput.value.toLowerCase();
             filteredUsers = filteredUsers.filter(user => 
-                user.email && user.email.toLowerCase().includes(searchTerm)
+                (user.email && user.email.toLowerCase().includes(searchTerm)) ||
+                (user.username && String(user.username).toLowerCase().includes(searchTerm)) ||
+                (user.id && String(user.id).toLowerCase().includes(searchTerm))
             );
         }
         
@@ -238,9 +270,12 @@ function renderUsersTable(users) {
             statusBadges.push('<span class="status-badge status-admin">Admin</span>');
         }
         
-        const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
-        const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'N/A';
-        const username = user.username || 'Not set';
+        const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A';
+        const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'N/A';
+        const userIdDisplay = (user.id || '').toString().substring(0, 6) || 'N/A';
+        const onlineStatus = user.isOnline ? 'Online' : 'Offline';
+        const lastOnline = user.lastOnlineAt ? new Date(user.lastOnlineAt).toLocaleString() : 'N/A';
+        const lastOffline = user.lastOfflineAt ? new Date(user.lastOfflineAt).toLocaleString() : 'N/A';
         
         const banButton = user.isBanned 
             ? `<button class="btn-action btn-unban" onclick="unbanUser('${user.id}')">Unban</button>`
@@ -249,8 +284,10 @@ function renderUsersTable(users) {
         return `
             <tr>
                 <td>${user.email || 'N/A'}</td>
-                <td><strong>${username}</strong></td>
-                <td>${statusBadges.join(' ')}</td>
+                <td><strong>${userIdDisplay}</strong></td>
+                <td>${onlineStatus}</td>
+                <td>${lastOnline}</td>
+                <td>${lastOffline}</td>
                 <td>${createdAt}</td>
                 <td>${lastLogin}</td>
                 <td>
@@ -265,6 +302,12 @@ function renderUsersTable(users) {
     }).join('');
 }
 
+// Load transactions (scaffold)
+async function loadTransactions() {
+    const list = document.getElementById('transactionsList');
+    if (!list) return;
+    list.innerHTML = '<p class="loading-row">No transactions yet</p>';
+}
 // Ban user
 window.banUser = async function(uid) {
     if (!confirm('Are you sure you want to ban this user?')) return;
@@ -330,7 +373,6 @@ window.viewUserDetails = async function(uid) {
             const details = `
 User Details:
 Email: ${userData.email || 'N/A'}
-Username: ${userData.username || 'Not set'}
 User ID: ${uid}
 Status: ${userData.isBanned ? 'Banned' : 'Active'}
 Admin: ${userData.isAdmin ? 'Yes' : 'No'}

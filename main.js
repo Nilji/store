@@ -165,22 +165,15 @@ function initializeAuth() {
                 
                 // Get user data from Firestore
                 const userData = await getUserData(uid);
-                const username = userData?.username || 'Not set';
                 const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
                 
                 // Store/update user data in Firestore
-                await storeUserData(uid, email, username, isAdmin);
+                await storeUserData(uid, email, isAdmin);
                 
                 // Display user information
                 if (userEmailEl) userEmailEl.textContent = email;
                 if (displayEmailEl) displayEmailEl.textContent = email;
-                if (userIdEl) userIdEl.textContent = username || uid.substring(0, 6);
-                
-                // Display username
-                const displayUsernameEl = document.getElementById('displayUsername');
-                if (displayUsernameEl) {
-                    displayUsernameEl.textContent = username || 'Not set';
-                }
+                if (userIdEl) userIdEl.textContent = uid.substring(0, 6);
                 
                 // Set user initial (first letter of email)
                 if (email && userInitialEl) {
@@ -218,6 +211,9 @@ function initializeAuth() {
                 
                 // Check if user is admin and show developer button
                 checkAdminAccess(email);
+
+                // Start mobile session timeout (30 minutes)
+                startMobileSessionTimer();
                 
                 hideError();
             } else {
@@ -299,7 +295,7 @@ async function getUserData(uid) {
 }
 
 // Store user data in Firestore
-async function storeUserData(uid, email, username, isAdmin) {
+async function storeUserData(uid, email, isAdmin) {
     try {
         if (!window.db) return;
         
@@ -311,7 +307,7 @@ async function storeUserData(uid, email, username, isAdmin) {
             await setDoc(userRef, {
                 email: email,
                 uid: uid,
-                username: username || null,
+                username: null,
                 createdAt: new Date().toISOString(),
                 isBanned: false,
                 isAdmin: isAdmin,
@@ -319,12 +315,9 @@ async function storeUserData(uid, email, username, isAdmin) {
             });
         } else {
             // Update last login and preserve existing data
-            const existingData = userDoc.data();
             await updateDoc(userRef, {
                 lastLogin: new Date().toISOString(),
-                isAdmin: isAdmin,
-                // Preserve username if it exists, otherwise don't overwrite
-                ...(username && !existingData.username ? { username: username } : {})
+                isAdmin: isAdmin
             });
         }
     } catch (error) {
@@ -356,3 +349,44 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeNavigation();
     initializeAuth();
 });
+
+// Mobile session timeout (30 minutes)
+function startMobileSessionTimer() {
+    try {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        if (!isMobile) return;
+
+        // Set session start if not set
+        if (!localStorage.getItem('sessionStart')) {
+            localStorage.setItem('sessionStart', Date.now().toString());
+        }
+
+        const THIRTY_MIN_MS = 30 * 60 * 1000;
+
+        // Clear previous interval if any
+        if (window.__sessionInterval) {
+            clearInterval(window.__sessionInterval);
+        }
+
+        window.__sessionInterval = setInterval(async () => {
+            const startStr = localStorage.getItem('sessionStart');
+            const start = startStr ? parseInt(startStr, 10) : Date.now();
+            const elapsed = Date.now() - start;
+            if (elapsed >= THIRTY_MIN_MS) {
+                clearInterval(window.__sessionInterval);
+                try {
+                    await signOut(window.auth);
+                } catch (e) {}
+                alert('Session Expired Please Relogin to continue');
+                // Reset session start
+                localStorage.removeItem('sessionStart');
+                // Redirect with flag
+                const url = new URL(window.location.origin + '/index.html');
+                url.searchParams.set('expired', '1');
+                window.location.href = url.toString();
+            }
+        }, 60000); // check every minute
+    } catch (error) {
+        console.error('Error starting session timer:', error);
+    }
+}
