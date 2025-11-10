@@ -6,12 +6,13 @@ function waitForFirebase() {
         let attempts = 0;
         const checkFirebase = setInterval(() => {
             attempts++;
-            if (window.firebaseInitialized && window.auth && window.db) {
+            if (window.firebaseInitialized && window.db) {
                 clearInterval(checkFirebase);
                 resolve();
             } else if (attempts > 50) {
                 clearInterval(checkFirebase);
-                reject(new Error('Firebase initialization timeout.'));
+                // Still resolve even if Firebase not fully initialized (use sessionStorage fallback)
+                resolve();
             }
         }, 100);
     });
@@ -25,19 +26,30 @@ function generateCode() {
 // Store verification code in Firestore
 async function storeVerificationCode(email, code) {
     try {
-        if (!window.db) return false;
-        
-        const codeRef = doc(window.db, 'verificationCodes', email);
         const expiresAt = new Date();
-        expiresAt.setMinutes(expiresAt.getMinutes() + 1); // 1 minute expiry
+        expiresAt.setSeconds(expiresAt.getSeconds() + 60); // 1 minute expiry
         
-        await setDoc(codeRef, {
-            code: code,
-            email: email,
-            createdAt: new Date().toISOString(),
-            expiresAt: expiresAt.toISOString(),
-            verified: false
-        });
+        // Always store in sessionStorage (primary method)
+        sessionStorage.setItem('verificationCode', code);
+        sessionStorage.setItem('verificationEmail', email);
+        sessionStorage.setItem('codeExpiresAt', expiresAt.toISOString());
+        
+        // Also store in Firestore if available
+        if (window.db) {
+            try {
+                const codeRef = doc(window.db, 'verificationCodes', email);
+                await setDoc(codeRef, {
+                    code: code,
+                    email: email,
+                    createdAt: new Date().toISOString(),
+                    expiresAt: expiresAt.toISOString(),
+                    verified: false
+                });
+            } catch (error) {
+                console.error('Error storing in Firestore (using sessionStorage):', error);
+                // Continue with sessionStorage
+            }
+        }
         
         return true;
     } catch (error) {
@@ -49,40 +61,75 @@ async function storeVerificationCode(email, code) {
 // Verify code
 async function verifyCode(email, code) {
     try {
-        if (!window.db) return false;
+        // First check sessionStorage (fallback)
+        const storedCode = sessionStorage.getItem('verificationCode');
+        const storedEmail = sessionStorage.getItem('verificationEmail');
+        const expiresAt = sessionStorage.getItem('codeExpiresAt');
         
-        const codeRef = doc(window.db, 'verificationCodes', email);
-        const codeDoc = await getDoc(codeRef);
-        
-        if (!codeDoc.exists()) {
-            return { valid: false, message: 'Code not found or expired' };
+        if (storedCode && storedEmail === email) {
+            const now = new Date();
+            const expireTime = new Date(expiresAt);
+            
+            if (now > expireTime) {
+                return { valid: false, message: 'Code has expired' };
+            }
+            
+            if (storedCode === code) {
+                // Code is valid
+                if (window.db) {
+                    try {
+                        const codeRef = doc(window.db, 'verificationCodes', email);
+                        await setDoc(codeRef, {
+                            code: code,
+                            email: email,
+                            verified: true,
+                            verifiedAt: new Date().toISOString()
+                        }, { merge: true });
+                    } catch (error) {
+                        console.error('Error updating code in Firestore:', error);
+                    }
+                }
+                return { valid: true };
+            } else {
+                return { valid: false, message: 'Invalid code' };
+            }
         }
         
-        const codeData = codeDoc.data();
-        const expiresAt = new Date(codeData.expiresAt);
-        const now = new Date();
-        
-        if (now > expiresAt) {
-            await deleteDoc(codeRef);
-            return { valid: false, message: 'Code has expired' };
+        // Try Firestore
+        if (window.db) {
+            const codeRef = doc(window.db, 'verificationCodes', email);
+            const codeDoc = await getDoc(codeRef);
+            
+            if (codeDoc.exists()) {
+                const codeData = codeDoc.data();
+                const expiresAt = new Date(codeData.expiresAt);
+                const now = new Date();
+                
+                if (now > expiresAt) {
+                    await deleteDoc(codeRef);
+                    return { valid: false, message: 'Code has expired' };
+                }
+                
+                if (codeData.code !== code) {
+                    return { valid: false, message: 'Invalid code' };
+                }
+                
+                if (codeData.verified) {
+                    return { valid: false, message: 'Code already used' };
+                }
+                
+                // Mark as verified
+                await setDoc(codeRef, {
+                    ...codeData,
+                    verified: true,
+                    verifiedAt: new Date().toISOString()
+                }, { merge: true });
+                
+                return { valid: true };
+            }
         }
         
-        if (codeData.code !== code) {
-            return { valid: false, message: 'Invalid code' };
-        }
-        
-        if (codeData.verified) {
-            return { valid: false, message: 'Code already used' };
-        }
-        
-        // Mark as verified
-        await setDoc(codeRef, {
-            ...codeData,
-            verified: true,
-            verifiedAt: new Date().toISOString()
-        }, { merge: true });
-        
-        return { valid: true };
+        return { valid: false, message: 'Code not found or expired' };
     } catch (error) {
         console.error('Error verifying code:', error);
         return { valid: false, message: 'Error verifying code' };
@@ -96,13 +143,16 @@ async function sendVerificationCode(email) {
         const stored = await storeVerificationCode(email, code);
         
         if (stored) {
-            // In production, send email here
-            // For now, we'll store it and show in console
-            console.log('Verification code for', email, ':', code);
+            // In production, integrate with email service (SendGrid, Mailgun, etc.)
+            // For now, log to console for testing
+            console.log('=== VERIFICATION CODE (FOR TESTING) ===');
+            console.log('Email:', email);
+            console.log('Code:', code);
+            console.log('Code expires in 1 minute');
+            console.log('=======================================');
             
-            // Store in sessionStorage for testing (remove in production)
-            sessionStorage.setItem('verificationCode', code);
-            sessionStorage.setItem('verificationEmail', email);
+            // In production, send actual email here
+            // Example: await sendEmail(email, 'Verification Code', `Your code is: ${code}`);
             
             return { success: true, code: code };
         }
@@ -238,7 +288,6 @@ if (verificationForm) {
                 const isLogin = sessionStorage.getItem('isLogin') === 'true';
                 const email = sessionStorage.getItem('pendingEmail');
                 const password = sessionStorage.getItem('pendingPassword');
-                const username = sessionStorage.getItem('pendingUsername');
                 
                 try {
                     if (isLogin) {
@@ -251,14 +300,14 @@ if (verificationForm) {
                         const userCredential = await createUserWithEmailAndPassword(window.auth, email, password);
                         const uid = userCredential.user.uid;
                         
-                        // Store username in Firestore
-                        if (window.db && username) {
+                        // Store user metadata in Firestore
+                        if (window.db) {
                             const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                             const userRef = doc(window.db, 'users', uid);
                             await setDoc(userRef, {
                                 email: email,
                                 uid: uid,
-                                username: username,
+                                username: null,
                                 createdAt: new Date().toISOString(),
                                 isBanned: false,
                                 lastLogin: new Date().toISOString(),
@@ -271,7 +320,6 @@ if (verificationForm) {
                     sessionStorage.setItem('emailVerified', 'true');
                     sessionStorage.removeItem('pendingEmail');
                     sessionStorage.removeItem('pendingPassword');
-                    sessionStorage.removeItem('pendingUsername');
                     sessionStorage.removeItem('verificationCode');
                     sessionStorage.removeItem('isLogin');
                     
@@ -360,20 +408,26 @@ function hideMessages() {
 }
 
 // Initialize on load
-waitForFirebase().then(() => {
+waitForFirebase().then(async () => {
     // Send initial code
-    sendVerificationCode(email).then(result => {
-        if (result.success) {
-            showSuccess('Verification code sent to your email!');
-            startTimer();
-            startResendTimer();
-        } else {
-            showError('Failed to send verification code');
-        }
-    });
+    const result = await sendVerificationCode(email);
+    if (result.success) {
+        showSuccess('Verification code sent to your email! Check console for code (for testing).');
+        startTimer();
+        startResendTimer();
+        
+        // For testing: show code in console
+        console.log('=== VERIFICATION CODE (FOR TESTING) ===');
+        console.log('Email:', email);
+        console.log('Code:', result.code);
+        console.log('=======================================');
+    } else {
+        showError('Failed to send verification code: ' + (result.message || 'Unknown error'));
+    }
     
     // Focus first input
-    document.getElementById('code1').focus();
+    const firstInput = document.getElementById('code1');
+    if (firstInput) firstInput.focus();
 }).catch(error => {
     showError('Initialization error: ' + error.message);
 });

@@ -62,6 +62,8 @@ service cloud.firestore {
       allow create: if true;
       // Only admins can read messages
       allow read: if isAuthenticated() && isAdmin();
+      // Allow admins to list messages
+      allow list: if isAuthenticated() && isAdmin();
       // Only admins can update/delete messages
       allow update: if isAuthenticated() && isAdmin();
       allow delete: if isAuthenticated() && isAdmin();

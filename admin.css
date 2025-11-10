@@ -230,6 +230,47 @@ body {
     border-color: #667eea;
 }
 
+/* Admin Tabs */
+.admin-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 15px;
+    padding: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.admin-tab {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #f0f0f0;
+    color: #666;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-tab:hover {
+    background: #e0e0e0;
+}
+
+.admin-tab.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.admin-tab-content {
+    display: none;
+}
+
+.admin-tab-content.active {
+    display: block;
+}
+
 /* Users Table */
 .users-table-container {
     background: white;
@@ -237,6 +278,93 @@ body {
     padding: 20px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     overflow-x: auto;
+}
+
+/* Messages Container */
+.messages-container {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.message-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    border-left: 4px solid #667eea;
+    transition: transform 0.3s ease;
+}
+
+.message-card:hover {
+    transform: translateX(5px);
+}
+
+.message-card.unread {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 10px;
+}
+
+.message-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+}
+
+.message-email {
+    color: #667eea;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.message-date {
+    color: #999;
+    font-size: 12px;
+}
+
+.message-content {
+    color: #666;
+    line-height: 1.6;
+    margin-top: 10px;
+}
+
+.message-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-mark-read {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.btn-delete-msg {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
 }
 
 .users-table {
@@ -394,6 +522,10 @@ body {
         width: 100%;
     }
 
+    .admin-tabs {
+        flex-direction: column;
+    }
+
     .users-table-container {
         overflow-x: scroll;
     }
@@ -408,6 +540,15 @@ body {
 
     .btn-action {
         width: 100%;
+    }
+
+    .message-card {
+        padding: 15px;
+    }
+
+    .message-header {
+        flex-direction: column;
+        gap: 10px;
     }
 }
 

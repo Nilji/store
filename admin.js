@@ -94,6 +94,30 @@ function setupEventListeners() {
     const searchInput = document.getElementById('searchInput');
     const filterSelect = document.getElementById('filterSelect');
     const refreshBtn = document.getElementById('refreshBtn');
+    const adminTabs = document.querySelectorAll('.admin-tab');
+    
+    // Tab switching
+    adminTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.getAttribute('data-tab');
+            
+            // Remove active class from all tabs and contents
+            adminTabs.forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding content
+            tab.classList.add('active');
+            const tabContent = document.getElementById(tabName + 'Tab');
+            if (tabContent) tabContent.classList.add('active');
+            
+            // Load data for the active tab
+            if (tabName === 'users') {
+                loadUsers();
+            } else if (tabName === 'messages') {
+                loadMessages();
+            }
+        });
+    });
     
     if (searchInput) {
         searchInput.addEventListener('input', () => {
@@ -110,6 +134,7 @@ function setupEventListeners() {
     if (refreshBtn) {
         refreshBtn.addEventListener('click', () => {
             loadUsers();
+            loadMessages();
         });
     }
 }
@@ -196,7 +221,9 @@ function renderUsersTable(users) {
     if (!tableBody) return;
     
     if (users.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="loading-row">No users found</td></tr>';
+        // Update statistics to 0 explicitly
+        updateStatistics([]);
+        tableBody.innerHTML = '<tr><td colspan="6" class="loading-row">No users registered yet</td></tr>';
         return;
     }
     
@@ -318,6 +345,99 @@ Banned At: ${userData.bannedAt ? new Date(userData.bannedAt).toLocaleString() : 
     } catch (error) {
         console.error('Error viewing user details:', error);
         showError('Failed to load user details: ' + error.message);
+    }
+};
+
+// Load contact messages
+async function loadMessages() {
+    try {
+        const messagesList = document.getElementById('messagesList');
+        if (!messagesList) return;
+        
+        messagesList.innerHTML = '<p class="loading-row">Loading messages...</p>';
+        
+        const messagesRef = collection(window.db, 'contactMessages');
+        const messagesSnapshot = await getDocs(messagesRef);
+        
+        const messages = [];
+        messagesSnapshot.forEach((doc) => {
+            messages.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Sort by date (newest first)
+        messages.sort((a, b) => {
+            const dateA = new Date(a.createdAt || 0);
+            const dateB = new Date(b.createdAt || 0);
+            return dateB - dateA;
+        });
+        
+        if (messages.length === 0) {
+            messagesList.innerHTML = '<p class="loading-row">No messages yet</p>';
+            return;
+        }
+        
+        messagesList.innerHTML = messages.map(msg => {
+            const date = msg.createdAt ? new Date(msg.createdAt).toLocaleString() : 'N/A';
+            const isUnread = !msg.read;
+            
+            return `
+                <div class="message-card ${isUnread ? 'unread' : ''}" data-message-id="${msg.id}">
+                    <div class="message-header">
+                        <div>
+                            <div class="message-name">${msg.name || 'Anonymous'}</div>
+                            <div class="message-email">${msg.email || 'N/A'}</div>
+                        </div>
+                        <div class="message-date">${date}</div>
+                    </div>
+                    <div class="message-content">${msg.message || ''}</div>
+                    <div class="message-actions">
+                        ${isUnread ? `<button class="btn-mark-read" onclick="markMessageAsRead('${msg.id}')">Mark as Read</button>` : ''}
+                        <button class="btn-delete-msg" onclick="deleteMessage('${msg.id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Error loading messages:', error);
+        const messagesList = document.getElementById('messagesList');
+        if (messagesList) {
+            messagesList.innerHTML = '<p class="loading-row">Error loading messages</p>';
+        }
+        showError('Failed to load messages: ' + error.message);
+    }
+}
+
+// Mark message as read
+window.markMessageAsRead = async function(messageId) {
+    try {
+        const messageRef = doc(window.db, 'contactMessages', messageId);
+        await updateDoc(messageRef, {
+            read: true,
+            readAt: new Date().toISOString()
+        });
+        
+        showSuccess('Message marked as read');
+        await loadMessages();
+    } catch (error) {
+        console.error('Error marking message as read:', error);
+        showError('Failed to mark message as read: ' + error.message);
+    }
+};
+
+// Delete message
+window.deleteMessage = async function(messageId) {
+    if (!confirm('Are you sure you want to delete this message?')) return;
+    
+    try {
+        const messageRef = doc(window.db, 'contactMessages', messageId);
+        await deleteDoc(messageRef);
+        
+        showSuccess('Message deleted successfully');
+        await loadMessages();
+    } catch (error) {
+        console.error('Error deleting message:', error);
+        showError('Failed to delete message: ' + error.message);
     }
 };
 

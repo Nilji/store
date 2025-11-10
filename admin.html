@@ -78,25 +78,43 @@
                 <button class="btn-refresh" id="refreshBtn">🔄 Refresh</button>
             </div>
 
-            <!-- Users Table -->
-            <div class="users-table-container">
-                <table class="users-table">
-                    <thead>
-                        <tr>
-                            <th>Email</th>
-                            <th>User ID</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Last Login</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        <tr>
-                            <td colspan="6" class="loading-row">Loading users...</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- Tabs for Users and Messages -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="users">Users</button>
+                <button class="admin-tab" data-tab="messages">Contact Messages</button>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="usersTab" class="admin-tab-content active">
+                <!-- Users Table -->
+                <div class="users-table-container">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Username</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="6" class="loading-row">Loading users...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Messages Tab -->
+            <div id="messagesTab" class="admin-tab-content">
+                <div class="messages-container">
+                    <div id="messagesList" class="messages-list">
+                        <p class="loading-row">Loading messages...</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Error Message -->
