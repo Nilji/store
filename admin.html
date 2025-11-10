@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Nexza Store</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-content">
+                <h1>🔧 Admin Dashboard</h1>
+                <div class="header-actions">
+                    <button class="btn-back" onclick="window.location.href='main.html'">← Back to Store</button>
+                    <button class="btn-logout" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Security Check Message -->
+        <div id="securityCheck" class="security-check">
+            <div class="loading-spinner"></div>
+            <p>Verifying admin access...</p>
+        </div>
+
+        <!-- Access Denied -->
+        <div id="accessDenied" class="access-denied" style="display: none;">
+            <h2>🚫 Access Denied</h2>
+            <p>You do not have permission to access this page.</p>
+            <button class="btn-back" onclick="window.location.href='main.html'">Go Back</button>
+        </div>
+
+        <!-- Admin Content -->
+        <div id="adminContent" class="admin-content" style="display: none;">
+            <!-- Statistics -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3 id="totalUsers">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚫</div>
+                    <div class="stat-info">
+                        <h3 id="bannedUsers">0</h3>
+                        <p>Banned Users</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <h3 id="activeUsers">0</h3>
+                        <p>Active Users</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👑</div>
+                    <div class="stat-info">
+                        <h3 id="adminUsers">0</h3>
+                        <p>Admins</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search users by email..." class="search-input">
+                <select id="filterSelect" class="filter-select">
+                    <option value="all">All Users</option>
+                    <option value="banned">Banned Only</option>
+                    <option value="active">Active Only</option>
+                    <option value="admin">Admins Only</option>
+                </select>
+                <button class="btn-refresh" id="refreshBtn">🔄 Refresh</button>
+            </div>
+
+            <!-- Users Table -->
+            <div class="users-table-container">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>User ID</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="6" class="loading-row">Loading users...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <div id="successMessage" class="success-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyBBVXFWSkmaTycSYtPNi1beDkJRfJKKA8A",
+                authDomain: "app-a8eca.firebaseapp.com",
+                projectId: "app-a8eca",
+                storageBucket: "app-a8eca.firebasestorage.app",
+                messagingSenderId: "848695753485",
+                appId: "1:848695753485:web:ba02165ff4d45ff938ce44"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            
+            window.auth = auth;
+            window.db = db;
+            window.firebaseInitialized = true;
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            window.firebaseInitialized = false;
+        }
+    </script>
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
+

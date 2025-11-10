@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexza Store - Dashboard</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <button class="developer-btn" id="developerBtn" title="Admin Dashboard">
+        <span>🔧</span> For Developer
+    </button>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>Nexza Store</h2>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link active" data-section="home">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#store" class="nav-link" data-section="store">Store</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#contact" class="nav-link" data-section="contact">Contact</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link" data-section="about">About</a>
+                </li>
+                <li class="nav-item">
+                    <button id="logoutBtn" class="btn-logout-nav">Logout</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Home Section -->
+        <section id="home" class="content-section active">
+            <div class="welcome-header">
+                <h1>Welcome Back!</h1>
+                <p class="welcome-subtitle">You are successfully signed in</p>
+            </div>
+            
+            <div class="main-content">
+                <div class="user-card">
+                    <div class="user-avatar">
+                        <span id="userInitial">U</span>
+                    </div>
+                    <h2 id="userEmail">Loading...</h2>
+                    <p class="user-status">✓ Account Active</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Account Information</h3>
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span id="displayEmail" class="info-value">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">User ID:</span>
+                        <span id="userId" class="info-value">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Store Section -->
+        <section id="store" class="content-section">
+            <div class="section-header">
+                <h1>Nexza Store</h1>
+                <p>Browse our amazing products</p>
+            </div>
+            <div class="store-grid">
+                <div class="product-card">
+                    <div class="product-image">📱</div>
+                    <h3>Smartphone</h3>
+                    <p class="product-price">$599</p>
+                    <button class="btn-buy">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">💻</div>
+                    <h3>Laptop</h3>
+                    <p class="product-price">$999</p>
+                    <button class="btn-buy">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">🎧</div>
+                    <h3>Headphones</h3>
+                    <p class="product-price">$199</p>
+                    <button class="btn-buy">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">⌚</div>
+                    <h3>Smart Watch</h3>
+                    <p class="product-price">$299</p>
+                    <button class="btn-buy">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">📷</div>
+                    <h3>Camera</h3>
+                    <p class="product-price">$799</p>
+                    <button class="btn-buy">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">🖥️</div>
+                    <h3>Monitor</h3>
+                    <p class="product-price">$399</p>
+                    <button class="btn-buy">Add to Cart</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="content-section">
+            <div class="section-header">
+                <h1>Contact Us</h1>
+                <p>Get in touch with us</p>
+            </div>
+            <div class="contact-container">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <h3>📧 Email</h3>
+                        <p>support@nexza.com</p>
+                    </div>
+                    <div class="contact-item">
+                        <h3>📞 Phone</h3>
+                        <p>+1 (555) 123-4567</p>
+                    </div>
+                    <div class="contact-item">
+                        <h3>📍 Address</h3>
+                        <p>123 Main Street<br>City, State 12345</p>
+                    </div>
+                </div>
+                <form class="contact-form">
+                    <div class="form-group">
+                        <label for="contactName">Name</label>
+                        <input type="text" id="contactName" placeholder="Your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactEmail">Email</label>
+                        <input type="email" id="contactEmail" placeholder="Your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactMessage">Message</label>
+                        <textarea id="contactMessage" rows="5" placeholder="Your message" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">Send Message</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="content-section">
+            <div class="section-header">
+                <h1>About Us</h1>
+                <p>Learn more about our company</p>
+            </div>
+            <div class="about-content">
+                <div class="about-card">
+                    <h3>Our Mission</h3>
+                    <p>To provide the best products and services to our customers with exceptional quality and customer service.</p>
+                </div>
+                <div class="about-card">
+                    <h3>Our Vision</h3>
+                    <p>To become the leading online store in the industry, known for innovation, reliability, and customer satisfaction.</p>
+                </div>
+                <div class="about-card">
+                    <h3>Our Values</h3>
+                    <p>We value integrity, quality, customer focus, and continuous improvement in everything we do.</p>
+                </div>
+            </div>
+        </section>
+
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        try {
+            // Your web app's Firebase configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyBBVXFWSkmaTycSYtPNi1beDkJRfJKKA8A",
+                authDomain: "app-a8eca.firebaseapp.com",
+                projectId: "app-a8eca",
+                storageBucket: "app-a8eca.firebasestorage.app",
+                messagingSenderId: "848695753485",
+                appId: "1:848695753485:web:ba02165ff4d45ff938ce44"
+            };
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            
+            // Make auth and db available globally
+            window.auth = auth;
+            window.db = db;
+            window.firebaseInitialized = true;
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            const errorDiv = document.getElementById('errorMessage');
+            if (errorDiv) {
+                errorDiv.textContent = 'Firebase initialization failed. Please check your configuration. Error: ' + error.message;
+                errorDiv.classList.add('show');
+            }
+            window.firebaseInitialized = false;
+        }
+    </script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
+

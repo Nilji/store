@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Firebase Auth</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="container">
+        <div class="login-card">
+            <h1>Welcome Back</h1>
+            <p class="subtitle">Sign in to your account</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">Sign In</button>
+            </form>
+            
+            <div class="divider">
+                <span>or</span>
+            </div>
+            
+            <button type="button" class="btn-secondary" id="signUpBtn">Create New Account</button>
+            
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        
+        try {
+            // Your web app's Firebase configuration
+            // IMPORTANT: Replace apiKey with your Web API Key from Firebase Console
+            // Go to: Firebase Console > Project Settings > General > Your apps > Web app
+            // The apiKey should be a long string (often starts with "AIza...")
+            const firebaseConfig = {
+                apiKey: "AIzaSyBBVXFWSkmaTycSYtPNi1beDkJRfJKKA8A",
+                authDomain: "app-a8eca.firebaseapp.com",
+                projectId: "app-a8eca",
+            storageBucket: "app-a8eca.firebasestorage.app",
+            messagingSenderId: "848695753485",
+            appId: "1:848695753485:web:ba02165ff4d45ff938ce44"
+            };
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            
+            // Make auth available globally
+            window.auth = auth;
+            window.firebaseInitialized = true;
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            const errorDiv = document.getElementById('errorMessage');
+            if (errorDiv) {
+                errorDiv.textContent = 'Firebase initialization failed. Please check your configuration. Error: ' + error.message;
+                errorDiv.classList.add('show');
+            }
+            window.firebaseInitialized = false;
+        }
+    </script>
+    <script type="module" src="index.js"></script>
+</body>
+</html>
+
