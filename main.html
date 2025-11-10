@@ -37,6 +37,12 @@
                     <a href="#about" class="nav-link" data-section="about">About</a>
                 </li>
                 <li class="nav-item">
+                    <a href="#announcements" class="nav-link" data-section="announcements">Announcements</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#inbox" class="nav-link" data-section="inbox">Messages</a>
+                </li>
+                <li class="nav-item">
                     <button id="logoutBtn" class="btn-logout-nav">Logout</button>
                 </li>
             </ul>
@@ -162,6 +168,24 @@
                     <button type="submit" class="btn-submit">Send Message</button>
                 </form>
             </div>
+        </section>
+
+        <!-- Announcements Section -->
+        <section id="announcements" class="content-section">
+            <div class="section-header">
+                <h1>Announcements</h1>
+                <p>Latest updates from the admins</p>
+            </div>
+            <div id="announcementsList" class="messages-list"></div>
+        </section>
+
+        <!-- Inbox Section -->
+        <section id="inbox" class="content-section">
+            <div class="section-header">
+                <h1>Messages</h1>
+                <p>Messages sent to you by admins</p>
+            </div>
+            <div id="inboxList" class="messages-list"></div>
         </section>
 
         <!-- About Section -->

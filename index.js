@@ -1,5 +1,4 @@
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Wait for Firebase to initialize
 function waitForFirebase() {
@@ -105,79 +104,7 @@ function initializeApp() {
     
 // (sound system removed)
 
-// Generate 6-digit verification code
-function generateVerificationCode() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-// Store verification code (sessionStorage primary, Firestore optional)
-async function storeVerificationCode(email, code) {
-    try {
-        const expiresAt = new Date();
-        expiresAt.setSeconds(expiresAt.getSeconds() + 60); // 1 minute expiry
-        
-        sessionStorage.setItem('verificationCode', code);
-        sessionStorage.setItem('verificationEmail', email);
-        sessionStorage.setItem('codeExpiresAt', expiresAt.toISOString());
-        
-        if (window.db) {
-            try {
-                const codeRef = doc(window.db, 'verificationCodes', email);
-                await setDoc(codeRef, {
-                    code: code,
-                    email: email,
-                    createdAt: new Date().toISOString(),
-                    expiresAt: expiresAt.toISOString(),
-                    verified: false
-                });
-            } catch (error) {
-                console.error('Error storing verification code in Firestore (fallback to sessionStorage):', error);
-            }
-        }
-        
-        return true;
-    } catch (error) {
-        console.error('Error storing verification code:', error);
-        return false;
-    }
-}
-
-// Send verification code via email (simulated)
-async function sendVerificationCode(email) {
-    try {
-        const code = generateVerificationCode();
-        const stored = await storeVerificationCode(email, code);
-        
-        if (stored) {
-            // If EMAIL_API_URL is configured, send via webhook (e.g., Cloud Function, SendGrid proxy)
-            try {
-                if (window.EMAIL_API_URL) {
-                    await fetch(window.EMAIL_API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, code })
-                    });
-                } else {
-                    // Fallback to console if no email service configured
-                    console.log('=== VERIFICATION CODE (FOR TESTING) ===');
-                    console.log('Email:', email);
-                    console.log('Code:', code);
-                    console.log('Code expires in 1 minute');
-                    console.log('=======================================');
-                }
-            } catch (e) {
-                console.warn('Email sending failed, code logged to console for testing.', e);
-                console.log('Email:', email, 'Code:', code);
-            }
-            return { success: true, code: code };
-        }
-        
-        return { success: false };
-    } catch (error) {
-        console.error('Error sending verification code:', error);
-        return { success: false, error: error.message };
-    }
-}
+// OTP verification system removed for direct signup
 
 // Handle form submission
 loginForm.addEventListener('submit', async (e) => {
@@ -216,22 +143,25 @@ loginForm.addEventListener('submit', async (e) => {
     
     try {
         if (isSignUpMode) {
-            // Sign up - send verification code first
-            sessionStorage.setItem('pendingEmail', email);
-            sessionStorage.setItem('pendingPassword', password);
-            
-            // Send verification code
-            submitBtn.textContent = 'Sending verification code...';
-            const codeResult = await sendVerificationCode(email);
-            
-            if (codeResult.success) {
-                showSuccess('Verification code sent to your email! Redirecting...');
-                // Redirect to verification page
+            // Direct sign up without email OTP
+            try {
+                await createUserWithEmailAndPassword(window.auth, email, password);
+                // Set session for mobile if needed
+                try {
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+                    if (isMobile) {
+                        localStorage.setItem('sessionStart', Date.now().toString());
+                    }
+                } catch (e) {}
+                showSuccess('Account created! Redirecting...');
                 setTimeout(() => {
-                    window.location.href = 'code.html';
-                }, 1000);
-            } else {
-                showError('Failed to send verification code. Please try again.');
+                    window.location.href = 'main.html';
+                }, 800);
+            } catch (authError) {
+                let errorMsg = authError.message || 'Failed to create account';
+                if (authError.code === 'auth/email-already-in-use') errorMsg = 'An account with this email already exists';
+                if (authError.code === 'auth/weak-password') errorMsg = 'Password is too weak';
+                showError(errorMsg);
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Sign Up';
             }

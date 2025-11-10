@@ -1,5 +1,5 @@
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { collection, doc, getDoc, setDoc, getDocs, updateDoc, deleteDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { collection, doc, getDoc, setDoc, getDocs, updateDoc, deleteDoc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Admin email list - Add your admin emails here
 const ADMIN_EMAILS = [
@@ -214,6 +214,13 @@ function initializeAuth() {
 
                 // Start mobile session timeout (30 minutes)
                 startMobileSessionTimer();
+
+                // Load user messages and announcements
+                try {
+                    await Promise.all([loadUserInbox(uid), loadAnnouncements()]);
+                } catch (e) {
+                    console.warn('Notification load error', e);
+                }
                 
                 hideError();
             } else {
@@ -341,6 +348,78 @@ async function checkUserBanStatus(uid) {
     } catch (error) {
         console.error('Error checking ban status:', error);
         return false;
+    }
+}
+
+// Load announcements (public for all users)
+async function loadAnnouncements() {
+    try {
+        if (!window.db) return;
+        const list = document.getElementById('announcementsList');
+        if (list) list.innerHTML = '<div class="loading-row">Loading...</div>';
+        const annRef = collection(window.db, 'announcements');
+        const snap = await getDocs(annRef);
+        const items = [];
+        snap.forEach(d => items.push({ id:d.id, ...d.data() }));
+        // simple newest-first based on createdAt if available
+        items.sort((a,b)=> (b.createdAt || '').localeCompare(a.createdAt || ''));
+        if (list) {
+            if (items.length === 0) {
+                list.innerHTML = '<div class="loading-row">No announcements</div>';
+            } else {
+                list.innerHTML = items.map(a => {
+                    const when = a.createdAt?.toDate ? a.createdAt.toDate().toLocaleString() : (a.createdAt || '');
+                    const bg = a.bgType === 'color' ? `style="background:${a.bgColor || '#eef2ff'}"` : '';
+                    const img = a.bgType === 'image' && a.bgImageUrl ? `style="background-image:url('${a.bgImageUrl}');background-size:cover;background-position:center;${a.bgBlur?'backdrop-filter:blur(6px);':''}"` : '';
+                    return `<div class="message-card" ${bg || img}>
+                        <div class="message-header">
+                            <div>
+                                <div class="message-name">${a.title || 'Announcement'}</div>
+                                <div class="message-email">${a.createdBy || 'admin'} • <span class="message-meta">${when}</span></div>
+                            </div>
+                        </div>
+                        <div class="message-content">${a.content || ''}</div>
+                    </div>`;
+                }).join('');
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load announcements', e);
+    }
+}
+
+// Load inbox messages for logged-in user
+async function loadUserInbox(uid) {
+    try {
+        if (!window.db || !uid) return;
+        const list = document.getElementById('inboxList');
+        if (list) list.innerHTML = '<div class="loading-row">Loading...</div>';
+        const ref = collection(window.db, 'adminMessages');
+        const qRef = query(ref, where('userId','==', uid));
+        const snap = await getDocs(qRef);
+        const rows = [];
+        snap.forEach(d => rows.push({ id:d.id, ...d.data() }));
+        rows.sort((a,b)=> (b.createdAt || '').localeCompare(a.createdAt || ''));
+        if (list) {
+            if (rows.length === 0) {
+                list.innerHTML = '<div class="loading-row">No messages</div>';
+            } else {
+                list.innerHTML = rows.map(m => {
+                    const when = m.createdAt ? new Date(m.createdAt).toLocaleString() : '';
+                    return `<div class="message-card">
+                        <div class="message-header">
+                            <div>
+                                <div class="message-name">${m.title || 'Message'}</div>
+                                <div class="message-email">${m.createdBy || 'admin'} • <span class="message-meta">${when}</span></div>
+                            </div>
+                        </div>
+                        <div class="message-content">${m.body || ''}</div>
+                    </div>`;
+                }).join('');
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load inbox', e);
     }
 }
 
